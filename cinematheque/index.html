@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://www.wikidata.org https://query.wikidata.org; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0F0D0B">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="cinémathèque">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="description" content="A private, text-only film and series log.">
+  <title>cinémathèque.</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/jetbrains-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/app.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header id="top">
+      <div class="bar">
+        <h1 class="brand">cinémathèque.</h1>
+        <span class="tot" id="tot"></span>
+        <button id="menuBtn" class="icon-btn" type="button" aria-label="Menu, lists and settings">
+          <span class="dots" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="tabs" id="tabs" role="tablist" aria-label="Media type">
+        <button type="button" role="tab" data-tab="movie">MOVIES <span class="n"></span></button>
+        <button type="button" role="tab" data-tab="tv">TV SERIES <span class="n"></span></button>
+        <span class="tab-ind" aria-hidden="true"></span>
+      </div>
+      <label class="search">
+        <span class="pr" aria-hidden="true">›</span>
+        <input id="q" type="search" placeholder="Filter titles or custom tags..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Filter titles or custom tags">
+        <button id="qx" type="button" class="qx" aria-label="Clear filter" hidden>×</button>
+      </label>
+      <div class="filters" id="filters" role="group" aria-label="Watch status">
+        <button type="button" data-st="all">ALL <span class="n"></span></button>
+        <button type="button" data-st="watched">WATCHED <span class="n"></span></button>
+        <button type="button" data-st="want">TO WATCH <span class="n"></span></button>
+        <button type="button" id="foldAll" class="fold">FOLD ALL</button>
+      </div>
+    </header>
+    <main id="list"></main>
+  </div>
+
+  <button id="fab" type="button" aria-label="Add a film or series"><span class="plus" aria-hidden="true"></span></button>
+
+  <div id="scrim" class="scrim"></div>
+  <section id="sheet" class="sheet" role="dialog" aria-modal="true" aria-label="Details" aria-hidden="true">
+    <div id="grab" class="grab" aria-hidden="true"></div>
+    <div id="sbody" class="sbody"></div>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <input id="kbproxy" class="kbproxy" type="text" aria-hidden="true" tabindex="-1">
+  <input id="file" type="file" accept="application/json,.json" hidden>
+
+  <div id="curtain" class="curtain" aria-hidden="true"><span class="brand">cinémathèque.</span></div>
+
+  <div id="lock" class="lock" hidden>
+    <form id="lockForm" class="lockbox" autocomplete="off">
+      <div class="brand big">cinémathèque.</div>
+      <p class="lk-sub">LOCKED · ENTER PASSCODE</p>
+      <input id="lockPass" class="in lk-in" type="password" autocomplete="current-password" enterkeyhint="go" aria-label="Passcode" required>
+      <button id="lockGo" class="btn pri" type="submit">UNLOCK</button>
+      <p id="lockErr" class="lk-err" role="alert"></p>
+      <button id="lockReset" class="lk-reset" type="button">Forgot passcode? Erase this library</button>
+    </form>
+  </div>
+
+  <noscript><p class="noscript">cinémathèque. needs JavaScript to run.</p></noscript>
+</body>
+</html>
