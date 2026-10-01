@@ -1,4 +1,4 @@
-# Dream Bookshelf
+# Bibliotheca
 
 A private, offline-first Progressive Web App for keeping track of the books and series you
 **want to read** and **want to buy**. It's tuned for Safari and Chrome on iOS, installs to the
@@ -150,7 +150,7 @@ the fallback reliable. The key is stored on the device and left out of backups.
 
 ### Backup format
 
-`Settings → Backup & restore → Export` makes `dream-bookshelf-YYYY-MM-DD.json`. On iOS it opens
+`Settings → Backup & restore → Export` makes `bibliotheca-YYYY-MM-DD.json`. On iOS it opens
 the share sheet (Save to Files, AirDrop…):
 
 ```jsonc

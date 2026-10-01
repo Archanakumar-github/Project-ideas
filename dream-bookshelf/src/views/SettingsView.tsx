@@ -67,7 +67,7 @@ async function shareOrDownload(text: string, filename: string) {
   const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean }
   if (nav.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: 'Dream Bookshelf backup' })
+      await navigator.share({ files: [file], title: 'Bibliotheca backup' })
       return true
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return false
@@ -398,7 +398,7 @@ export function SettingsView() {
               <Smartphone size={20} className="mt-0.5 shrink-0 text-amber" />
               <p>
                 In Safari, tap <Share size={14} className="inline text-ink" aria-label="Share" /> Share, then <span className="text-ink">“Add to Home Screen”</span>.
-                Dream Bookshelf then opens full-screen, works offline, and its storage is kept safe from Safari’s clean-up.
+                Bibliotheca then opens full-screen, works offline, and its storage is kept safe from Safari’s clean-up.
               </p>
             </Card>
           </Section>
@@ -432,7 +432,7 @@ export function SettingsView() {
         </Section>
 
         <footer className="pb-4 text-center text-xs leading-relaxed text-ink-faint">
-          <p className="font-serif text-sm text-ink-muted">Dream Bookshelf {__APP_VERSION__}</p>
+          <p className="font-serif text-sm text-ink-muted">Bibliotheca {__APP_VERSION__}</p>
           <p className="mt-1">
             Book data from <a className="underline underline-offset-2" href="https://openlibrary.org" target="_blank" rel="noreferrer">Open Library</a> and{' '}
             <a className="underline underline-offset-2" href="https://books.google.com" target="_blank" rel="noreferrer">Google Books</a>. No accounts, no tracking.
