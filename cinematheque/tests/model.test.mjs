@@ -1,4 +1,4 @@
-// Run: node --test exodus/tests/
+// Run: node --test cinematheque/tests/
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as M from '../js/model.js';

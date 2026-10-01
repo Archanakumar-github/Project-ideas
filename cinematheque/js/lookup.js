@@ -1,10 +1,10 @@
-// exodus. — optional online lookup (Wikidata: free, no account, no API key).
+// cinémathèque. — optional online lookup (Wikidata: free, no account, no API key).
 // Only the title being searched is sent. Results are cached on the device so a lookup done
 // once still works offline. Everything here fails soft: no network → no suggestions.
 
 const API = 'https://www.wikidata.org/w/api.php';
 const SPARQL = 'https://query.wikidata.org/sparql';
-const CACHE_KEY = 'exodus:webcache';
+const CACHE_KEY = 'cinematheque:webcache';
 const CACHE_MAX = 300;
 const TIMEOUT = 7000;
 export const REF_RE = /^Q\d{1,12}$/;

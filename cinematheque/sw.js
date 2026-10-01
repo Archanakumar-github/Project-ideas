@@ -1,7 +1,7 @@
-// exodus. — offline support.
+// cinémathèque. — offline support.
 // App code (HTML/JS/CSS) is network-first with a short timeout, so updates arrive on their own
 // while the saved copy keeps the app working offline. Fonts and icons are cache-first.
-const CACHE = 'exodus-app';
+const CACHE = 'cinematheque-app';
 const ASSETS = [
   './',
   './index.html',
@@ -33,7 +33,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('exodus-') && k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('cinematheque-') && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });

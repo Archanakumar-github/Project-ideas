@@ -1,10 +1,10 @@
-// Exodus — on-device storage.
+// Cinémathèque — on-device storage.
 // Plain mode keeps the library as JSON in localStorage. With a passcode set, the library is
 // encrypted with AES-GCM (256-bit) under a key derived from the passcode via PBKDF2-SHA-256;
 // the passcode itself is never stored, so a wrong one simply fails to decrypt.
 
-const DATA = 'exodus:v1';
-const VAULT = 'exodus:vault:v1';
+const DATA = 'cinematheque:v1';
+const VAULT = 'cinematheque:vault:v1';
 const ITERATIONS = 310000;
 
 const enc = new TextEncoder();

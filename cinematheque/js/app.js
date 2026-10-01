@@ -1,12 +1,12 @@
-// exodus. — UI layer
+// cinémathèque. — UI layer
 import { h, $ } from './dom.js';
 import * as M from './model.js';
 import { vault } from './vault.js';
 import { TEMPLATES } from './starter.js';
 import * as W from './lookup.js';
 
-const PREFS_KEY = 'exodus:prefs';
-const FAILS_KEY = 'exodus:lockfails';
+const PREFS_KEY = 'cinematheque:prefs';
+const FAILS_KEY = 'cinematheque:lockfails';
 const TYPE_LABEL = { movie: 'FILM', tv: 'SERIES' };
 const TAB_LABEL = { movie: 'MOVIES', tv: 'TV SERIES' };
 const STATUS_LABEL = { all: 'ALL', watched: 'WATCHED', want: 'TO WATCH' };
@@ -1881,7 +1881,7 @@ function menuSheet() {
     const backup = prefs.lastBackup ? new Date(prefs.lastBackup).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : 'never';
 
     put(el,
-      h('div', { class: 'sh-kicker' }, h('span', null, 'EXODUS. · ARCHIVE')),
+      h('div', { class: 'sh-kicker' }, h('span', null, 'CINÉMATHÈQUE. · ARCHIVE')),
       h('div', { class: 'stats' },
         h('div', null, h('b', null, String(s.movie)), 'FILMS'),
         h('div', null, h('b', null, String(s.tv)), 'SERIES'),
@@ -2080,8 +2080,8 @@ function loadTemplate(key) {
 }
 
 function exportBackup() {
-  const json = JSON.stringify({ app: 'exodus', v: 1, exported: new Date().toISOString(), data: db });
-  const name = `exodus-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  const json = JSON.stringify({ app: 'cinematheque', v: 1, exported: new Date().toISOString(), data: db });
+  const name = `cinematheque-backup-${new Date().toISOString().slice(0, 10)}.json`;
   const file = new File([json], name, { type: 'application/json' });
   const done = () => {
     prefs.lastBackup = Date.now();
@@ -2113,17 +2113,17 @@ function importBackup(mode) {
     const f = E.file.files && E.file.files[0];
     if (!f) return;
     if (f.size > 10e6) {
-      toast('That file is too large to be an Exodus backup');
+      toast('That file is too large to be an Cinémathèque backup');
       return;
     }
     let incoming;
     try {
       const parsed = JSON.parse(await f.text());
-      const raw = parsed && parsed.app === 'exodus' ? parsed.data : parsed;
+      const raw = parsed && (parsed.app === 'cinematheque' || parsed.app === 'exodus') ? parsed.data : parsed;
       if (!raw || typeof raw !== 'object' || !raw.items || !raw.cats) throw new Error('bad');
       incoming = M.sanitizeDB(raw);
     } catch {
-      toast('That file isn’t an Exodus backup');
+      toast('That file isn’t an Cinémathèque backup');
       return;
     }
     const n = Object.keys(incoming.items).length;
@@ -2342,7 +2342,7 @@ const STANDALONE = matchMedia('(display-mode: standalone)').matches || navigator
 function installBanner() {
   if (STANDALONE || !IS_IOS || prefs.hideInstall) return;
   const bar = h('div', { class: 'install', role: 'note' },
-    h('span', { class: 'i-t' }, h('b', null, 'Install exodus.'), ' Tap Share ', h('span', { class: 'i-g', 'aria-label': 'the Share button' }, '↑'), ' then “Add to Home Screen”. It then works offline and your library is kept safe.'),
+    h('span', { class: 'i-t' }, h('b', null, 'Install cinémathèque.'), ' Tap Share ', h('span', { class: 'i-g', 'aria-label': 'the Share button' }, '↑'), ' then “Add to Home Screen”. It then works offline and your library is kept safe.'),
     h('button', {
       type: 'button',
       'aria-label': 'Dismiss',
@@ -2380,7 +2380,7 @@ function boot() {
   if (vault.enabled) {
     if (!vault.supported) {
       E.lock.hidden = false;
-      E.lockErr.textContent = 'This library is encrypted. Open exodus. over https to unlock it.';
+      E.lockErr.textContent = 'This library is encrypted. Open cinémathèque. over https to unlock it.';
       E.lockGo.disabled = true;
     } else {
       showLock();
@@ -2391,7 +2391,7 @@ function boot() {
       db = raw ? M.sanitizeDB(raw) : M.createDB();
     } catch {
       try {
-        localStorage.setItem(`exodus:damaged:${Date.now()}`, localStorage.getItem('exodus:v1') || '');
+        localStorage.setItem(`cinematheque:damaged:${Date.now()}`, localStorage.getItem('cinematheque:v1') || '');
       } catch {
         /* keep going */
       }

@@ -1,4 +1,4 @@
-// Exodus — data layer.
+// Cinémathèque — data layer.
 // Pure functions over one plain JSON document. No DOM, so it runs in Node tests too.
 //
 //   items   one log per film / series (type, title, year, tags, watch status)
@@ -545,7 +545,7 @@ export function applyTemplate(db, tpl) {
 
 /** Rebuild a library from untrusted JSON: unknown fields dropped, strings bounded, links checked. */
 export function sanitizeDB(raw) {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Not an Exodus library');
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Not an Cinémathèque library');
   const db = createDB();
 
   for (const [id, it] of entriesOf(raw.items)) {

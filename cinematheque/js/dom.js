@@ -1,4 +1,4 @@
-// Exodus — tiny DOM helpers. Text always goes in as text nodes, never as HTML.
+// Cinémathèque — tiny DOM helpers. Text always goes in as text nodes, never as HTML.
 
 export const $ = (sel, root = document) => root.querySelector(sel);
 

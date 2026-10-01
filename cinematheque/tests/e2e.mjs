@@ -105,7 +105,7 @@ try {
   await page.goto(base);
   await page.waitForSelector('.empty');
   await page.evaluate(() => document.fonts.ready);
-  assert.match(await page.locator('.brand').first().textContent(), /exodus\./);
+  assert.match(await page.locator('.brand').first().textContent(), /cinémathèque\./);
   await shot('welcome');
 
   // --- MCU template: phases, numbering, films + series cross-linked
@@ -274,8 +274,8 @@ try {
   await sheet.locator('input[placeholder="New passcode"]').fill('2468');
   await sheet.locator('input[placeholder="Repeat passcode"]').fill('2468');
   await sheet.getByRole('button', { name: 'ENCRYPT & LOCK' }).click();
-  await page.waitForFunction(() => localStorage.getItem('exodus:vault:v1') && !localStorage.getItem('exodus:v1'));
-  const stored = await page.evaluate(() => localStorage.getItem('exodus:vault:v1'));
+  await page.waitForFunction(() => localStorage.getItem('cinematheque:vault:v1') && !localStorage.getItem('cinematheque:v1'));
+  const stored = await page.evaluate(() => localStorage.getItem('cinematheque:vault:v1'));
   assert.ok(!stored.includes('Dune'), 'no plaintext titles at rest');
   await page.reload();
   await page.waitForSelector('#lock:not([hidden])');
@@ -290,7 +290,7 @@ try {
   assert.equal(await section('Rewatch').locator('.row .tt', { hasText: /^Dune$/ }).count(), 1);
 
   // --- Backup round-trip (replace) through the file picker
-  const backup = await page.evaluate(() => JSON.stringify({ app: 'exodus', v: 1, data: { items: { a1: { title: 'Stalker', year: '1979', type: 'movie' } }, cats: {}, places: {} } }));
+  const backup = await page.evaluate(() => JSON.stringify({ app: 'cinematheque', v: 1, data: { items: { a1: { title: 'Stalker', year: '1979', type: 'movie' } }, cats: {}, places: {} } }));
   await page.locator('#menuBtn').click();
   const chooser = page.waitForEvent('filechooser');
   await sheet.getByRole('button', { name: /Import — replace/ }).click();

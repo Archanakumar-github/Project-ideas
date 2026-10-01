@@ -25,10 +25,10 @@ precacheAndRoute(self.__WB_MANIFEST)
 cleanupOutdatedCaches()
 
 // App-shell routing: every navigation resolves to the precached index.html —
-// except the separate exodus. app published alongside at /<repo>/exodus/.
+// except the separate cinémathèque. app published alongside at /<repo>/cinematheque/.
 registerRoute(
   new NavigationRoute(createHandlerBoundToURL('index.html'), {
-    denylist: [/^\/api\//, /\.[a-z0-9]+$/i, /\/exodus(\/|$)/],
+    denylist: [/^\/api\//, /\.[a-z0-9]+$/i, /\/cinematheque(\/|$)/],
   }),
 )
 

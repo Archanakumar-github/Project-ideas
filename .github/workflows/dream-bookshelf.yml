@@ -1,6 +1,6 @@
-name: Bibliotheca + exodus.
+name: Bibliotheca + cinémathèque.
 
-# Builds the GitHub Pages site: Bibliotheca at /<repo>/ and exodus. at /<repo>/exodus/.
+# Builds the GitHub Pages site: Bibliotheca at /<repo>/ and cinémathèque. at /<repo>/cinematheque/.
 # Pull requests: type-check, test and build.
 # Pushes to the default branch: the same, then publish to GitHub Pages
 # (one-time setup: repo Settings -> Pages -> Source: "GitHub Actions").
@@ -8,13 +8,13 @@ on:
   pull_request:
     paths:
       - 'dream-bookshelf/**'
-      - 'exodus/**'
+      - 'cinematheque/**'
       - '.github/workflows/dream-bookshelf.yml'
   push:
     branches: [master, main]
     paths:
       - 'dream-bookshelf/**'
-      - 'exodus/**'
+      - 'cinematheque/**'
       - '.github/workflows/dream-bookshelf.yml'
   workflow_dispatch:
 
@@ -44,14 +44,14 @@ jobs:
         run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
-      - name: Test exodus.
-        working-directory: exodus
+      - name: Test cinémathèque.
+        working-directory: cinematheque
         run: node --test tests/model.test.mjs tests/lookup.test.mjs
-      - name: Add exodus. to the site (static files, no build step)
+      - name: Add cinémathèque. to the site (static files, no build step)
         working-directory: .
         run: |
-          mkdir -p dream-bookshelf/dist/exodus
-          cp -R exodus/index.html exodus/manifest.webmanifest exodus/sw.js exodus/css exodus/js exodus/fonts exodus/icons dream-bookshelf/dist/exodus/
+          mkdir -p dream-bookshelf/dist/cinematheque
+          cp -R cinematheque/index.html cinematheque/manifest.webmanifest cinematheque/sw.js cinematheque/css cinematheque/js cinematheque/fonts cinematheque/icons dream-bookshelf/dist/cinematheque/
       - if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v4
         with:

@@ -1,4 +1,4 @@
-// Exodus — optional starter timelines. Entries are in release order: [title, year, type].
+// Cinémathèque — optional starter timelines. Entries are in release order: [title, year, type].
 
 export const TEMPLATES = {
   mcu: {

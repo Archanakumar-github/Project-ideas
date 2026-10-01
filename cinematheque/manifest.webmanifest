@@ -1,6 +1,6 @@
 {
-  "name": "exodus.",
-  "short_name": "exodus.",
+  "name": "cinémathèque.",
+  "short_name": "cinémathèque",
   "description": "A private, text-only film and series log.",
   "start_url": "./index.html",
   "scope": "./",
