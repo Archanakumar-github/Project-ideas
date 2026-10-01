@@ -1,6 +1,6 @@
 /// <reference lib="WebWorker" />
 /**
- * Dream Bookshelf service worker (built by vite-plugin-pwa's injectManifest strategy).
+ * Bibliotheca service worker (built by vite-plugin-pwa's injectManifest strategy).
  *
  *  - Precaches the whole app shell (HTML, JS, CSS, fonts, icons) -> launches with no network.
  *  - SPA navigation fallback to index.html -> deep links work offline.

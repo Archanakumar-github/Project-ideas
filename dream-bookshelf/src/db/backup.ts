@@ -98,7 +98,7 @@ function stripFunctions<T extends Record<string, unknown>>(obj: T): Partial<Sett
 
 export function backupFileName(date = new Date()) {
   const stamp = date.toISOString().slice(0, 10)
-  return `dream-bookshelf-${stamp}.json`
+  return `bibliotheca-${stamp}.json`
 }
 
 /* ------------------------------------------------------------------------------------------
@@ -199,9 +199,9 @@ export function parseBackup(text: string): ParsedBackup {
   } catch {
     throw new BackupError("That file isn't valid JSON.")
   }
-  if (!json || typeof json !== 'object') throw new BackupError("That file isn't a Dream Bookshelf backup.")
+  if (!json || typeof json !== 'object') throw new BackupError("That file isn't a Bibliotheca backup.")
   const r = json as Record<string, unknown>
-  if (r.format !== BACKUP_FORMAT) throw new BackupError("That file isn't a Dream Bookshelf backup.")
+  if (r.format !== BACKUP_FORMAT) throw new BackupError("That file isn't a Bibliotheca backup.")
   if (!isNum(r.version) || r.version > BACKUP_VERSION) {
     throw new BackupError('This backup was made by a newer version of the app. Please update first.')
   }

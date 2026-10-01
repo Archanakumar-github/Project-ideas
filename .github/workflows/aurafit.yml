@@ -1,7 +1,7 @@
 name: AuraFit
 
-# Type-check, test and build AuraFit on every pull request and push to main that touches it.
-# (GitHub Pages for this repository is published by the Dream Bookshelf workflow; deploy
+# Type-check, test and build AuraFit on every pull request and push to the default branch that touches it.
+# (GitHub Pages for this repository is published by the Bibliotheca workflow; deploy
 # aurafit/dist to any static host, see aurafit/README.md.)
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
       - 'aurafit/**'
       - '.github/workflows/aurafit.yml'
   push:
-    branches: [main]
+    branches: [master, main]
     paths:
       - 'aurafit/**'
       - '.github/workflows/aurafit.yml'

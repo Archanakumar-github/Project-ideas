@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Dream Bookshelf",
-  "short_name": "Bookshelf",
+  "name": "Bibliotheca",
+  "short_name": "Bibliotheca",
   "description": "A private, offline-first sanctuary for the books and series you want to read and buy.",
   "lang": "en",
   "dir": "ltr",

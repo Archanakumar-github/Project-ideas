@@ -65,7 +65,7 @@ describe('export / import', () => {
 
   it('rejects foreign or future files with friendly errors', () => {
     expect(() => parseBackup('nope')).toThrow(BackupError)
-    expect(() => parseBackup('{"hello":1}')).toThrow(/isn't a Dream Bookshelf backup/)
+    expect(() => parseBackup('{"hello":1}')).toThrow(/isn't a Bibliotheca backup/)
     expect(() => parseBackup('{"format":"dream-bookshelf-backup","version":99}')).toThrow(/newer version/)
   })
 

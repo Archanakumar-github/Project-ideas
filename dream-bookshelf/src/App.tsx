@@ -112,7 +112,7 @@ function DatabaseGate({ children }: { children: ReactNode }) {
     return (
       <FullScreenMessage
         title="Storage is unavailable"
-        body="Dream Bookshelf keeps your library on this device, but the browser refused to open local storage. Private Browsing or a full disk are the usual causes."
+        body="Bibliotheca keeps your library on this device, but the browser refused to open local storage. Private Browsing or a full disk are the usual causes."
       />
     )
   }

@@ -1,7 +1,7 @@
-name: Dream Bookshelf
+name: Bibliotheca
 
 # Pull requests: type-check, test and build.
-# Pushes to main: the same, then publish to GitHub Pages
+# Pushes to the default branch: the same, then publish to GitHub Pages
 # (one-time setup: repo Settings -> Pages -> Source: "GitHub Actions").
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
       - 'dream-bookshelf/**'
       - '.github/workflows/dream-bookshelf.yml'
   push:
-    branches: [main]
+    branches: [master, main]
     paths:
       - 'dream-bookshelf/**'
       - '.github/workflows/dream-bookshelf.yml'

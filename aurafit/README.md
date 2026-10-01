@@ -42,7 +42,7 @@ automatically the first time it's opened over HTTPS.
 | Host | Notes |
 |---|---|
 | Netlify / Vercel / Cloudflare Pages | Root `aurafit`, build `npm run build`, output `dist`. |
-| GitHub Pages (sub-path) | `BASE_PATH=/<repo-name>/<folder>/ npm run build`, then publish `dist/`. The repo's existing Pages workflow publishes Dream Bookshelf, so AuraFit's CI ([`.github/workflows/aurafit.yml`](../.github/workflows/aurafit.yml)) tests and builds only. |
+| GitHub Pages (sub-path) | `BASE_PATH=/<repo-name>/<folder>/ npm run build`, then publish `dist/`. The repo's GitHub Pages site already serves Bibliotheca, so AuraFit's CI ([`.github/workflows/aurafit.yml`](../.github/workflows/aurafit.yml)) tests and builds only. |
 
 ## Writing `user_profile.md`
 
