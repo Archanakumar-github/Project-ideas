@@ -1,0 +1,190 @@
+name: GitHub Pages (all apps)
+
+# One GitHub Pages site, several independent apps side by side:
+#
+#   /<repo>/                Bibliotheca     (dream-bookshelf/)
+#   /<repo>/cinematheque/   cinémathèque.   (cinematheque/)
+#   /<repo>/aurafit/        AuraFit         (aurafit/, published as soon as that folder exists)
+#   /<repo>/ethereal/       Ethereal        (ethereal/, the web build of the Expo app)
+#
+# A repository has exactly one Pages site and every deployment replaces all of it, so each
+# deployment is assembled from every app. Each app builds in its own job; if any one fails,
+# nothing is deployed and the live site keeps working exactly as before (no app ever
+# disappears because another one broke).
+#
+# Pull requests: test and build everything. Pushes to the default branch: the same, then deploy.
+# One-time setup: repo Settings -> Pages -> Source: "GitHub Actions".
+on:
+  pull_request:
+    paths:
+      - 'dream-bookshelf/**'
+      - 'cinematheque/**'
+      - 'aurafit/**'
+      - 'ethereal/**'
+      - '.github/workflows/pages.yml'
+  push:
+    branches: [master, main]
+    paths:
+      - 'dream-bookshelf/**'
+      - 'cinematheque/**'
+      - 'aurafit/**'
+      - 'ethereal/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  # Superseded PR runs can stop; a deployment in progress always finishes.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  bibliotheca:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dream-bookshelf
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dream-bookshelf/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - name: Build (served from /<repo>/)
+        run: npm run build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bibliotheca
+          path: dream-bookshelf/dist
+          if-no-files-found: error
+
+  cinematheque:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cinematheque
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: node --test tests/model.test.mjs tests/lookup.test.mjs
+      - name: Collect the static files (no build step)
+        run: |
+          mkdir -p ../site-cinematheque
+          cp -R index.html manifest.webmanifest sw.js css js fonts icons ../site-cinematheque/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cinematheque
+          path: site-cinematheque
+          if-no-files-found: error
+
+  aurafit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Is AuraFit in this commit?
+        id: present
+        run: echo "yes=$([ -f aurafit/package.json ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - if: steps.present.outputs.yes == 'true'
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: aurafit/package-lock.json
+      - if: steps.present.outputs.yes == 'true'
+        working-directory: aurafit
+        run: npm ci && npm test
+      - if: steps.present.outputs.yes == 'true'
+        name: Build (served from /<repo>/aurafit/)
+        working-directory: aurafit
+        run: npm run build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/aurafit/
+      - if: steps.present.outputs.yes == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: aurafit
+          path: aurafit/dist
+          if-no-files-found: error
+
+  ethereal:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ethereal
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ethereal/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Build the web app (served from /<repo>/ethereal/)
+        run: npm run build:web
+        env:
+          EXPO_BASE_URL: /${{ github.event.repository.name }}/ethereal
+          EXPO_NO_TELEMETRY: 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ethereal
+          path: ethereal/dist
+          if-no-files-found: error
+
+  site:
+    needs: [bibliotheca, cinematheque, aurafit, ethereal]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: bibliotheca
+          path: site
+      - uses: actions/download-artifact@v4
+        with:
+          name: cinematheque
+          path: site/cinematheque
+      - uses: actions/download-artifact@v4
+        with:
+          name: ethereal
+          path: site/ethereal
+      - name: Add AuraFit when it was built
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: aurafit
+          path: site/aurafit
+      - name: Check every app is in place
+        run: |
+          for app in "" cinematheque ethereal; do
+            test -f "site/${app:+$app/}index.html" || { echo "::error::Missing ${app:-Bibliotheca} index.html"; exit 1; }
+          done
+          test -f site/cinematheque/sw.js && test -f site/ethereal/sw.js && test -f site/sw.js
+          ls -la site site/*/index.html
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: site
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
