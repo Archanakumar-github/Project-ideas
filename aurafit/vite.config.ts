@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import pkg from './package.json' with { type: 'json' }
 
-// Set BASE_PATH when hosting under a sub-path (e.g. GitHub Pages: BASE_PATH=/Project-ideas/).
+// Set BASE_PATH when hosting under a sub-path (e.g. GitHub Pages: BASE_PATH=/aurafit/).
 const base = process.env.BASE_PATH ?? '/'
 
 export default defineConfig({

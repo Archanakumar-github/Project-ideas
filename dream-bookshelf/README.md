@@ -4,6 +4,8 @@ A private, offline-first Progressive Web App for keeping track of the books and 
 **want to read** and **want to buy**. It's tuned for Safari and Chrome on iOS, installs to the
 Home Screen, and keeps every byte of your library on your device.
 
+**[Open the app](https://archanakumar-github.github.io/bibliotheca/)**
+
 > **Warm Sanctuary** theme: deep espresso canvas, aged-paper cards, cream type, an amber glow
 > for actions, sage for *Want to Read* and terracotta for *Want to Buy*.
 
@@ -42,8 +44,8 @@ from Safari's 7-day storage clean-up for websites.
 
 | Host | Notes |
 |---|---|
-| Netlify / Vercel / Cloudflare Pages | Build command `npm run build`, output `dist`, root `dream-bookshelf`. |
-| GitHub Pages (project site) | Already set up: [`.github/workflows/dream-bookshelf.yml`](../.github/workflows/dream-bookshelf.yml) tests, builds and publishes on every push to `master`. One-time step: **Settings → Pages → Source: GitHub Actions**. The app is then at `https://<user>.github.io/<repo-name>/`. To build by hand for a sub-path, run `BASE_PATH=/<repo-name>/ npm run build`. |
+| Netlify / Vercel / Cloudflare Pages | Build command `npm run build`, output `dist`. |
+| GitHub Pages (project site) | Already set up: [`.github/workflows/pages.yml`](.github/workflows/pages.yml) tests, builds and publishes on every push to `main`. One-time step: **Settings → Pages → Source: GitHub Actions**. The app is then at `https://<user>.github.io/<repo-name>/`, on its own site, deployed independently of any other app. To build by hand for a sub-path, run `BASE_PATH=/<repo-name>/ npm run build`. |
 
 ## Tech stack
 

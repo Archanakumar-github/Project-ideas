@@ -9,6 +9,8 @@ on-device coach answers questions from all of it.
 Built for iPhone (Safari and Chrome) and installable to the Home Screen. Everything is stored
 on your device, encrypted.
 
+**[Open the app](https://archanakumar-github.github.io/aurafit/)**
+
 ## Features
 
 | | |
@@ -41,8 +43,8 @@ automatically the first time it's opened over HTTPS.
 
 | Host | Notes |
 |---|---|
-| Netlify / Vercel / Cloudflare Pages | Root `aurafit`, build `npm run build`, output `dist`. |
-| GitHub Pages (sub-path) | `BASE_PATH=/<repo-name>/<folder>/ npm run build`, then publish `dist/`. The repo's GitHub Pages site already serves Bibliotheca, so AuraFit's CI ([`.github/workflows/aurafit.yml`](../.github/workflows/aurafit.yml)) tests and builds only. |
+| Netlify / Vercel / Cloudflare Pages | Build `npm run build`, output `dist`. |
+| GitHub Pages (project site) | Already set up: [`.github/workflows/pages.yml`](.github/workflows/pages.yml) tests, builds and publishes on every push to `main`. One-time step: **Settings → Pages → Source: GitHub Actions**. The app is then at `https://<user>.github.io/<repo-name>/`, on its own site, deployed independently of any other app. To build by hand for a sub-path, run `BASE_PATH=/<repo-name>/ npm run build`. |
 
 ## Writing `user_profile.md`
 

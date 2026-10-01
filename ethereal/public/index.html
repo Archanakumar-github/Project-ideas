@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="%LANG_ISO_CODE%">
+  <head>
+    <meta charset="utf-8" />
+    <!-- viewport-fit=cover: draw under the notch and home indicator; the app pads with safe areas. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>%WEB_TITLE%</title>
+    <meta name="description" content="A private, offline-first dream vision board. Your sanctuary for curating your horizon." />
+    <meta name="color-scheme" content="dark" />
+
+    <!-- Installable on iPhone: Share → Add to Home Screen. All paths are relative, so the app
+         works wherever it is hosted (it lives at /<repo>/ on GitHub Pages). -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Ethereal" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="./icons/favicon.svg" />
+
+    <style id="expo-reset">
+      html,
+      body {
+        height: 100%;
+        background: #0e0f26;
+        overscroll-behavior: none;
+      }
+      body {
+        overflow: hidden;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+      }
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+      /* Inputs at 16px+ so iOS Safari never zooms in on focus. */
+      input,
+      textarea {
+        font-size: max(16px, 1em);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>Ethereal needs JavaScript to open your sanctuary.</noscript>
+    <div id="root"></div>
+    <script>
+      // Offline support. The worker's scope is this folder only, so it never touches the other
+      // apps published on the same origin (<user>.github.io).
+      if ('serviceWorker' in navigator && window.isSecureContext && location.hostname !== 'localhost') {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(function () {})
+        })
+      }
+    </script>
+  </body>
+</html>
