@@ -12,6 +12,7 @@ export const MAX_DEPTH = 3; // list › sub-list › sub-sub-list
 export const SORTS = ['manual', 'title', 'year', 'year-desc', 'recent'];
 
 const ID_RE = /^[a-z0-9]{1,32}$/i;
+const REF_RE = /^Q\d{1,12}$/; // Wikidata item id
 const has = (o, k) => typeof k === 'string' && Object.hasOwn(o, k);
 const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
 const entriesOf = (o) => (o && typeof o === 'object' && !Array.isArray(o) ? Object.entries(o) : []);
@@ -178,7 +179,8 @@ export function findPlace(db, itemId, catId) {
 export const isFav = (db, itemId) => !!findPlace(db, itemId, FAV);
 
 /** Existing log with the same title, type and (when both are known) year. */
-export function findExact(db, { title, year = '', type = 'movie' }) {
+export function findExact(db, { title, year = '', type = 'movie', ref = '' }) {
+  if (ref) for (const it of Object.values(db.items)) if (it.ref === ref) return it;
   const n = norm(title);
   const y = cleanYear(year);
   if (!n) return null;
@@ -297,6 +299,7 @@ export function addItem(db, data) {
     t,
     u: t,
   };
+  if (REF_RE.test(data.ref || '')) item.ref = data.ref;
   db.items[item.id] = item;
   return item;
 }
@@ -334,6 +337,14 @@ export function setStatus(db, itemId, status) {
   if (!it) return;
   it.status = status === 'watched' ? 'watched' : 'want';
   it.u = now();
+}
+
+/** Remember which online record (Wikidata id) this log matches. */
+export function setRef(db, itemId, ref) {
+  const it = db.items[itemId];
+  if (!it) return;
+  if (REF_RE.test(ref || '')) it.ref = ref;
+  else delete it.ref;
 }
 
 export function setType(db, itemId, type) {
@@ -551,6 +562,7 @@ export function sanitizeDB(raw) {
       t: num(it.t),
       u: num(it.u),
     };
+    if (REF_RE.test(it.ref || '')) db.items[id].ref = it.ref;
   }
 
   for (const [id, c] of entriesOf(raw.cats)) {

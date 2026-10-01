@@ -12,6 +12,7 @@ const ASSETS = [
   './js/model.js',
   './js/vault.js',
   './js/starter.js',
+  './js/lookup.js',
   './fonts/inter-latin-wght-normal.woff2',
   './fonts/jetbrains-mono-latin-wght-normal.woff2',
   './icons/apple-touch-icon.png',

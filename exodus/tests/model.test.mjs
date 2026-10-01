@@ -262,3 +262,14 @@ test('mergeDB unions libraries and keeps the newer edit', () => {
   assert.ok(M.findPlace(merged, extra.id, scifi.id));
   assert.equal(M.placesOf(merged, dune.id).length, 2);
 });
+
+test('online reference ids are kept, validated and used to spot duplicates', () => {
+  const db = M.createDB();
+  const it = M.addItem(db, { title: 'Dune', year: '2021', ref: 'Q55340592' });
+  assert.equal(it.ref, 'Q55340592');
+  assert.equal(M.addItem(db, { title: 'X', ref: 'Q1 OR 1=1' }).ref, undefined);
+  assert.equal(M.findExact(db, { title: 'Dune: Part One', type: 'movie', ref: 'Q55340592' }).id, it.id);
+  const clean = M.sanitizeDB({ items: { a1: { title: 'A', ref: 'Q42' }, b2: { title: 'B', ref: '}; DROP' } }, cats: {}, places: {} });
+  assert.equal(clean.items.a1.ref, 'Q42');
+  assert.equal(clean.items.b2.ref, undefined);
+});

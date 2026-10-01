@@ -3,6 +3,7 @@ import { h, $ } from './dom.js';
 import * as M from './model.js';
 import { vault } from './vault.js';
 import { TEMPLATES } from './starter.js';
+import * as W from './lookup.js';
 
 const PREFS_KEY = 'exodus:prefs';
 const FAILS_KEY = 'exodus:lockfails';
@@ -166,11 +167,12 @@ function seg(options, value, onChange, label) {
     );
   }
   paint(value);
+  wrap.set = paint;
   return wrap;
 }
 
 function label(text, aside) {
-  return h('div', { class: 'lbl' }, h('span', null, text), h('span', { class: 'rule' }), aside ? h('span', { class: 'aside' }, aside) : null);
+  return h('div', { class: 'lbl' }, h('span', null, text), h('span', { class: 'rule' }), aside ? (aside instanceof Node ? aside : h('span', { class: 'aside' }, aside)) : null);
 }
 
 function field(k, input) {
@@ -893,6 +895,103 @@ function endSheetDrag(e) {
 E.grab.addEventListener('pointerup', endSheetDrag);
 E.grab.addEventListener('pointercancel', endSheetDrag);
 
+/* ================= online lookup ================= */
+
+const webOn = () => prefs.web !== false;
+
+/** Live "from the web" suggestions under a title field. `onPick(result)` gets { ref, title, year, type, note }. */
+function webFinder(onPick) {
+  const box = h('div', { class: 'sugg web', 'aria-live': 'polite' });
+  let timer = 0;
+  let ctrl = null;
+  let lastKey = '';
+  const status = (text) => put(box, h('div', { class: 'web-st' }, text));
+  function clear() {
+    clearTimeout(timer);
+    if (ctrl) ctrl.abort();
+    ctrl = null;
+    lastKey = '';
+    box.replaceChildren();
+  }
+  function run(query, type, now = false) {
+    const q = M.parseTitleYear(query).title.trim();
+    clearTimeout(timer);
+    if (!webOn() || q.length < 3) {
+      clear();
+      return;
+    }
+    const key = `${q.toLowerCase()}|${type}`;
+    if (key === lastKey && !now) return;
+    timer = setTimeout(async () => {
+      lastKey = key;
+      if (ctrl) ctrl.abort();
+      const mine = new AbortController();
+      ctrl = mine;
+      status('SEARCHING ONLINE…');
+      try {
+        const { results, source } = await W.searchTitles(q, mine.signal);
+        if (ctrl !== mine) return;
+        if (source === 'offline') return status('OFFLINE · ONLINE SUGGESTIONS RETURN WITH A CONNECTION');
+        if (!results.length) return status('NO ONLINE MATCH · JUST TYPE IT IN');
+        const sorted = results.slice().sort((a, b) => (a.type === type ? 0 : 1) - (b.type === type ? 0 : 1));
+        put(box,
+          h('div', { class: 'web-st' }, source === 'cache' ? 'FROM THE WEB · SAVED ON THIS PHONE' : 'FROM THE WEB · TAP TO FILL IN'),
+          sorted.slice(0, 5).map((r) => h('button', { type: 'button', class: 'web-r', onclick: () => onPick(r) },
+            h('span', { class: 's-arrow' }, '↗'),
+            h('span', { class: 's-t' }, r.title),
+            h('span', { class: 's-m' }, `${r.year || '—'} · ${TYPE_LABEL[r.type]}`),
+            r.note ? h('span', { class: 's-n' }, r.note) : null)),
+        );
+      } catch {
+        if (ctrl !== mine) return;
+        status('ONLINE LOOKUP UNAVAILABLE · JUST TYPE IT IN');
+      }
+    }, now ? 0 : 450);
+  }
+  return { el: box, run, clear };
+}
+
+async function webDetails(ref) {
+  try {
+    return await W.fetchDetails(ref);
+  } catch {
+    return null;
+  }
+}
+
+/** Look up every title that has no year; only unambiguous matches are applied (one undo). */
+async function fillMissingYears() {
+  const todo = Object.values(db.items).filter((it) => !it.year).slice(0, 200);
+  if (!todo.length) return toast('Every title already has a year');
+  if (!W.isOnline()) return toast('You’re offline — try again with a connection');
+  closeSheet();
+  const found = [];
+  let n = 0;
+  toast(`Looking up ${todo.length} title${todo.length > 1 ? 's' : ''}…`);
+  for (const it of todo) {
+    try {
+      const { results } = await W.searchTitles(it.title);
+      const same = results.filter((r) => r.type === it.type && r.year && M.norm(r.title) === M.norm(it.title));
+      if (same.length === 1) found.push({ id: it.id, year: same[0].year, ref: same[0].ref });
+    } catch {
+      /* skip this one */
+    }
+    if (++n % 5 === 0 && n < todo.length) toast(`Looking up… ${n} of ${todo.length}`);
+  }
+  if (!db) return undefined;
+  if (!found.length) return toast('No confident matches — those titles keep their blank year');
+  commit((d) => {
+    for (const f of found) {
+      const it = d.items[f.id];
+      if (!it || it.year) continue;
+      it.year = M.cleanYear(f.year);
+      M.setRef(d, f.id, f.ref);
+      it.u = Date.now();
+    }
+  }, `Filled in ${found.length} of ${todo.length} missing year${todo.length > 1 ? 's' : ''}`);
+  return undefined;
+}
+
 /* ================= add sheet ================= */
 
 function openAdd(catId) {
@@ -907,11 +1006,14 @@ function addSheet(preCat) {
     status: prefs.lastStatus === 'watched' ? 'watched' : 'want',
     cats: new Set(preCat && db.cats[preCat] ? [preCat] : []),
     link: null,
+    ref: null,
+    refTitle: '',
+    webTags: [],
   };
 
   const title = textInput({ cls: 'big', placeholder: 'Title', maxlength: '160', enterkeyhint: 'enter', autocapitalize: 'words', 'aria-label': 'Title' });
   const year = yearInput('');
-  const tags = textInput({ placeholder: 'Sci-Fi, Japan', maxlength: '200', autocapitalize: 'words', 'aria-label': 'Tags' });
+  const tags = textInput({ placeholder: 'optional', maxlength: '200', autocapitalize: 'words', 'aria-label': 'Tags' });
   const bulk = h('textarea', {
     class: 'in',
     rows: '7',
@@ -928,9 +1030,11 @@ function addSheet(preCat) {
   const addBtn = h('button', { type: 'button', class: 'btn pri', onclick: () => submit(false) }, 'ADD');
   const nextBtn = h('button', { type: 'button', class: 'btn sec', onclick: () => submit(true) }, 'ADD + NEXT');
 
+  const web = webFinder(pickWeb);
   const single = h('div', null,
     field('TITLE', title),
     sugg,
+    web.el,
     banner,
     h('div', { class: 'fields-2' }, field('YEAR', year), field('TAGS', tags)),
     tagChips,
@@ -943,6 +1047,28 @@ function addSheet(preCat) {
     paintSugg();
     paintPreview();
   }, 'Type');
+
+  async function pickWeb(r) {
+    web.clear();
+    const existing = M.findExact(db, { title: r.title, year: r.year, type: r.type, ref: r.ref });
+    if (existing) {
+      linkTo(existing);
+      return;
+    }
+    st.ref = r.ref;
+    st.refTitle = r.title;
+    st.type = r.type;
+    typeSeg.set(r.type);
+    title.value = r.title;
+    year.value = r.year;
+    paintSugg();
+    const d = await webDetails(r.ref);
+    if (!d || st.ref !== r.ref) return;
+    if (!year.value && d.year) year.value = d.year;
+    if (!tags.value.trim() && d.genres.length) tags.value = d.genres.slice(0, 2).join(', ');
+    st.webTags = [...d.genres, ...d.countries];
+    paintTagChips();
+  }
   const statusSeg = seg([['want', 'TO WATCH'], ['watched', 'WATCHED']], st.status, (v) => {
     st.status = v;
     prefs.lastStatus = v;
@@ -998,6 +1124,7 @@ function addSheet(preCat) {
     banner.hidden = true;
     title.value = '';
     year.value = '';
+    st.ref = null;
     paintChips();
     title.focus({ preventScroll: true });
   }
@@ -1051,7 +1178,13 @@ function addSheet(preCat) {
 
   function paintTagChips() {
     const have = new Set(M.cleanTags(tags.value).map((t) => t.toLowerCase()));
-    const list = M.allTags(db).filter((t) => !have.has(t.toLowerCase())).slice(0, 10);
+    const seen = new Set();
+    const list = [...st.webTags, ...M.allTags(db)].filter((t) => {
+      const k = t.toLowerCase();
+      if (have.has(k) || seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    }).slice(0, 10);
     tagChips.replaceChildren(
       ...list.map((t) => h('button', {
         type: 'button',
@@ -1082,6 +1215,9 @@ function addSheet(preCat) {
 
   title.addEventListener('input', () => {
     paintSugg();
+    if (st.ref && title.value !== st.refTitle) st.ref = null;
+    if (!st.link && !st.ref) web.run(title.value, st.type);
+    else web.clear();
     const guess = M.parseTitleYear(title.value).year;
     year.placeholder = guess || '—';
   });
@@ -1136,7 +1272,7 @@ function addSheet(preCat) {
       nudge(year);
       return toast('Year needs four digits, e.g. 1999');
     }
-    let item = st.link && db.items[st.link] ? db.items[st.link] : M.findExact(db, { title: t, year: y, type: st.type });
+    let item = st.link && db.items[st.link] ? db.items[st.link] : M.findExact(db, { title: t, year: y, type: st.type, ref: st.ref || '' });
     const existed = !!item;
     if (existed && !cats.length && !st.link) {
       toast(`“${item.title}” is already logged — pick a list to file it in`);
@@ -1144,7 +1280,8 @@ function addSheet(preCat) {
       return undefined;
     }
     const done = commit((d) => {
-      if (!item) item = M.addItem(d, { type: st.type, title: t, year: y, tags: tags.value, status: st.status });
+      if (!item) item = M.addItem(d, { type: st.type, title: t, year: y, tags: tags.value, status: st.status, ref: st.ref || '' });
+      else if (st.ref && !item.ref) M.setRef(d, item.id, st.ref);
       for (const c of cats) M.addPlace(d, item.id, c);
       ui.flash.add(item.id);
       return true;
@@ -1155,6 +1292,9 @@ function addSheet(preCat) {
       title.value = '';
       year.value = '';
       tags.value = '';
+      st.ref = null;
+      st.webTags = [];
+      web.clear();
       paintSugg();
       paintTagChips();
       title.focus({ preventScroll: true });
@@ -1204,7 +1344,7 @@ function itemSheet(itemId, placeId, ctxCat, focusEdit) {
   const quick = h('div', { class: 'quick' });
   const fTitle = textInput({ cls: 'big', value: v0.title, placeholder: 'Title', maxlength: '160', autocapitalize: 'words', enterkeyhint: 'done', 'aria-label': 'Title' });
   const fYear = yearInput(v0.year);
-  const fTags = textInput({ value: v0.tags.join(', '), placeholder: 'Sci-Fi, Japan', maxlength: '200', autocapitalize: 'words', enterkeyhint: 'done', 'aria-label': 'Tags' });
+  const fTags = textInput({ value: v0.tags.join(', '), placeholder: 'optional', maxlength: '200', autocapitalize: 'words', enterkeyhint: 'done', 'aria-label': 'Tags' });
   const tagChips = h('div', { class: 'chips' });
   const scopeBox = h('div');
   const overrideNote = h('div');
@@ -1284,6 +1424,7 @@ function itemSheet(itemId, placeId, ctxCat, focusEdit) {
       h('h2', { class: 'sh-title' }, v.title),
       h('div', { class: 'sh-meta' },
         [TYPE_LABEL[it.type], v.year || 'NO YEAR', n ? `IN ${n} LIST${n > 1 ? 'S' : ''}` : 'IN NO LIST', p && p.o ? 'CUSTOM IN THIS LIST' : null].filter(Boolean).join(' · '),
+        it.ref ? [' · ', h('a', { class: 'reflink', href: W.refUrl(it.ref), target: '_blank', rel: 'noopener noreferrer' }, 'WIKIDATA ↗')] : null,
         v.tags.length ? h('div', null, v.tags.map((t) => h('button', {
           type: 'button',
           class: 'tagbtn',
@@ -1468,12 +1609,35 @@ function itemSheet(itemId, placeId, ctxCat, focusEdit) {
     paintSave();
   }
 
+  const finder = webFinder(async (r) => {
+    finder.clear();
+    if (!fYear.value && r.year) fYear.value = r.year;
+    commit((d) => M.setRef(d, itemId, r.ref));
+    const d = await webDetails(r.ref);
+    if (d) {
+      if (!fYear.value && d.year) fYear.value = d.year;
+      const merged = M.cleanTags([...M.cleanTags(fTags.value), ...d.genres.slice(0, 3)]);
+      fTags.value = merged.join(', ');
+    }
+    paintSave();
+    paintTagChips();
+    toast(dirty() ? 'Filled in from Wikidata — check it, then SAVE' : 'Linked to Wikidata — details already match');
+  });
+  function findOnline() {
+    if (!W.isOnline()) {
+      toast('You’re offline — online lookup returns with a connection');
+      return;
+    }
+    finder.run(fTitle.value, db.items[itemId].type, true);
+  }
+
   refresh();
   paintTagChips();
 
   const editBox = h('div', null,
-    label('EDIT DETAILS'),
+    label('EDIT DETAILS', webOn() ? h('button', { type: 'button', class: 'lbl-btn', onclick: findOnline }, '↗ FIND ONLINE') : null),
     field('TITLE', fTitle),
+    finder.el,
     h('div', { class: 'fields-2' }, field('YEAR', fYear), field('TAGS', fTags)),
     tagChips,
     scopeBox,
@@ -1716,7 +1880,7 @@ function menuSheet() {
 
     const backup = prefs.lastBackup ? new Date(prefs.lastBackup).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : 'never';
 
-    el.replaceChildren(
+    put(el,
       h('div', { class: 'sh-kicker' }, h('span', null, 'EXODUS. · ARCHIVE')),
       h('div', { class: 'stats' },
         h('div', null, h('b', null, String(s.movie)), 'FILMS'),
@@ -1744,6 +1908,21 @@ function menuSheet() {
       act('↓', 'Export backup (.json)', exportBackup),
       act('↑', 'Import — merge into this library', () => importBackup('merge')),
       act('↑', 'Import — replace this library', () => importBackup('replace')),
+
+      label('ONLINE LOOKUP'),
+      h('button', {
+        type: 'button',
+        class: 'check',
+        role: 'checkbox',
+        'aria-checked': String(webOn()),
+        onclick: () => {
+          prefs.web = !webOn();
+          savePrefs();
+          paint();
+        },
+      }, h('span', { class: 'bx' }), h('span', null, 'Suggest titles from the internet', h('span', { class: 'sub' }, 'Year, film/series and genres from Wikidata as you type. Only the title you type is sent — your library never leaves this phone. Offline, the app simply skips it.'))),
+      webOn() ? act('↗', 'Fill in missing years online', fillMissingYears, `${Object.values(db.items).filter((it) => !it.year).length} WITHOUT`) : null,
+      webOn() ? act('◦', 'Forget saved lookups', () => { W.clearCache(); toast('Saved lookups cleared'); }) : null,
 
       label('PRIVACY'),
       ...privacyRows(),

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "npx --yes serve -l 5173 .",
-    "test": "node --test tests/model.test.mjs",
+    "test": "node --test tests/model.test.mjs tests/lookup.test.mjs",
     "test:e2e": "node tests/e2e.mjs"
   },
   "devDependencies": {

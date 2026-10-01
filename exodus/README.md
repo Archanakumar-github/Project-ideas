@@ -26,6 +26,7 @@ To run it on a computer, use `npm start` (any static server works). Offline mode
 | You want to… | Do this |
 |---|---|
 | Add a title | Tap **+**. Type `Dune (2021)` and the year fills itself in. Pick lists as chips and tap **ADD**. **ADD + NEXT** (or Return) keeps the sheet open for the next one. |
+| Look a title up online | Start typing in the add sheet. Matches **from the web** (Wikidata) appear under the title; tap one and the year, film/series and genres fill themselves in. Existing titles: tap the row → **↗ FIND ONLINE**. **⋯ → Fill in missing years online** does the whole library (only unambiguous matches are applied, with one UNDO). Offline, this simply steps aside and you type as normal. |
 | Add many at once | **+ → BULK**: paste one title per line. `Loki (2021) [tv]`, `film: Eternals`, numbered lists and spreadsheet columns all work, and the order is kept. |
 | Add straight into a list | Tap the **+** on that list's header. |
 | File a title in more lists | Start typing an existing title in the add sheet and tap the suggestion. Or tap the row and tick lists. |
@@ -52,7 +53,7 @@ Every title is either a **film** or a **series**, and appears under MOVIES or TV
 
 ## Privacy and security
 
-- **On-device only.** No network requests, analytics or third-party code. Fonts and icons are bundled.
+- **On-device only.** No analytics or third-party code; fonts and icons are bundled. The only network requests are optional title lookups to Wikidata (free, no account): just the title you type is sent, never your library. Turn them off in **⋯ → Online lookup**. Lookups are cached on the phone, so ones you've done before also work offline.
 - **Optional passcode lock** (**⋯ → Privacy**). The library is encrypted at rest with AES-256-GCM, using a key derived from your passcode with PBKDF2-SHA-256 (310,000 iterations) via WebCrypto. The passcode is never stored. After 5 wrong tries, the wait between attempts grows. The app auto-locks after it's been in the background for 1–15 minutes (you choose), and blanks its app-switcher preview. A forgotten passcode cannot be recovered, so export a backup first.
 - **Strict Content-Security-Policy:** `'self'` only and no inline script. User text is only ever inserted as text, never as HTML.
 - **Imported backups are sanitised**: unknown fields are dropped, lengths bounded, links between titles and lists verified, and prototype-pollution keys rejected.
@@ -70,6 +71,7 @@ exodus/
   js/vault.js           localStorage + AES-GCM encryption
   js/app.js             UI: rendering, sheets, swipe, drag, lock
   js/starter.js         MCU timeline template
+  js/lookup.js          optional online lookup (Wikidata), cached on device
   sw.js                 offline support (network-first app code, cached fallback)
   tests/                node:test unit tests + Playwright end-to-end test
 ```

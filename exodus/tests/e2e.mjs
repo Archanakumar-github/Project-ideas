@@ -30,6 +30,36 @@ const base = `http://localhost:${server.address().port}/`;
 const browser = await chromium.launch();
 const { defaultBrowserType, ...iphone } = devices['iPhone 13'];
 const context = await browser.newContext({ ...iphone, serviceWorkers: 'block' });
+
+// Canned Wikidata responses (same shapes as the live API) so the test never depends on the internet.
+const WD_SEARCH = {
+  'perfect days': [
+    { id: 'Q115632389', label: 'Perfect Days', description: '2023 film by Wim Wenders' },
+    { id: 'Q7168539', label: 'Perfect Days', description: 'song by Bonnie Tyler' },
+  ],
+  persona: [
+    { id: 'Q543382', label: 'Persona', description: '1966 film by Ingmar Bergman' },
+    { id: 'Q3376536', label: 'Persona', description: 'video game series' },
+  ],
+};
+const WD_DETAILS = {
+  Q115632389: { date: '2023-11-10T00:00:00Z', genres: 'drama film', countries: 'Japan|Germany' },
+};
+const wdCalls = [];
+async function wikidata(route) {
+  const url = new URL(route.request().url());
+  wdCalls.push(url.hostname);
+  const cors = { 'access-control-allow-origin': '*', 'content-type': 'application/json' };
+  if (url.hostname === 'www.wikidata.org') {
+    const q = (url.searchParams.get('search') || '').toLowerCase();
+    return route.fulfill({ status: 200, headers: cors, body: JSON.stringify({ search: WD_SEARCH[q] || [] }) });
+  }
+  const ref = (url.searchParams.get('query') || '').match(/wd:(Q\d+)/)?.[1];
+  const d = WD_DETAILS[ref];
+  const binding = d ? { date: { value: d.date }, genres: { value: d.genres }, countries: { value: d.countries } } : {};
+  return route.fulfill({ status: 200, headers: cors, body: JSON.stringify({ results: { bindings: [binding] } }) });
+}
+await context.route(/^https:\/\/(www|query)\.wikidata\.org\//, wikidata);
 const page = await context.newPage();
 const problems = [];
 page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
@@ -125,6 +155,35 @@ try {
   await page.waitForTimeout(500);
   assert.match(await page.locator('#toast .msg').textContent(), /^Added 3 → Sci-Fi/);
   assert.deepEqual(await section('Sci-Fi').locator('.row .tt').allTextContents(), ['Dune', 'Arrival', 'Annihilation']);
+
+  // --- Online lookup fills in year, type and genres; the log remembers its Wikidata id
+  await page.locator('#fab').click();
+  await sheet.getByRole('radio', { name: 'SERIES' }).click();
+  await sheet.locator('input[aria-label="Title"]').fill('Perfect Days');
+  const hit = sheet.locator('.web-r', { hasText: '2023' });
+  await hit.waitFor();
+  assert.equal(await sheet.locator('.web-r').count(), 1, 'songs and other non-titles are filtered out');
+  await shot('online-lookup');
+  await hit.click();
+  await page.waitForFunction(() => document.querySelector('#sheet input[aria-label="Tags"]').value === 'Drama');
+  assert.equal(await sheet.locator('input[aria-label="Year"]').first().inputValue(), '2023');
+  assert.equal(await sheet.getByRole('radio', { name: 'FILM' }).getAttribute('aria-checked'), 'true', 'type switched to film');
+  assert.equal(await sheet.locator('.chip.tag', { hasText: 'Japan' }).count(), 1, 'country offered as a tag');
+  await sheet.getByRole('button', { name: 'ADD', exact: true }).click();
+  await page.waitForTimeout(400);
+  await rows().filter({ hasText: 'Perfect Days' }).first().click();
+  assert.equal(await sheet.locator('.reflink').getAttribute('href'), 'https://www.wikidata.org/wiki/Q115632389');
+  await closeSheet();
+
+  // --- Fill in missing years online: only unambiguous matches are applied
+  await page.locator('#fab').click();
+  await sheet.locator('input[aria-label="Title"]').fill('Persona');
+  await sheet.getByRole('button', { name: 'ADD', exact: true }).click();
+  await page.waitForTimeout(400);
+  await page.locator('#menuBtn').click();
+  await sheet.getByRole('button', { name: /Fill in missing years online/ }).click();
+  await page.waitForFunction(() => document.querySelector('#toast .msg')?.textContent.startsWith('Filled in'));
+  assert.equal(await rows().filter({ hasText: 'Persona' }).first().locator('.yr').textContent(), '1966');
 
   // --- Edit only inside one list; the other list keeps its version
   await sciRow.click();
@@ -257,6 +316,11 @@ try {
   await p2.waitForTimeout(400);
   await off.setOffline(true);
   server.closeAllConnections();
+  await p2.locator('#fab').click();
+  await p2.locator('#sheet input[aria-label="Title"]').fill('Some title');
+  await p2.waitForSelector('#sheet .web-st:has-text("OFFLINE")');
+  await p2.keyboard.press('Escape');
+  await p2.waitForTimeout(400);
   await p2.reload();
   await p2.waitForSelector('#list .row');
   assert.deepEqual(await p2.locator('#list .row .tt').allTextContents(), ['Paris, Texas']);
@@ -271,6 +335,7 @@ try {
   assert.deepEqual(offErrors, [], 'no page errors offline');
   await off.close();
 
+  assert.ok(wdCalls.includes('www.wikidata.org') && wdCalls.includes('query.wikidata.org'), 'both Wikidata endpoints used');
   assert.deepEqual(problems, [], 'no console errors or CSP violations');
   console.log('e2e: all checks passed');
 } catch (err) {
