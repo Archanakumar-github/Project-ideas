@@ -24,10 +24,11 @@ const DAY = 24 * 60 * 60
 precacheAndRoute(self.__WB_MANIFEST)
 cleanupOutdatedCaches()
 
-// App-shell routing: every navigation resolves to the precached index.html.
+// App-shell routing: every navigation resolves to the precached index.html —
+// except the separate cinémathèque. app published alongside at /<repo>/cinematheque/.
 registerRoute(
   new NavigationRoute(createHandlerBoundToURL('index.html'), {
-    denylist: [/^\/api\//, /\.[a-z0-9]+$/i],
+    denylist: [/^\/api\//, /\.[a-z0-9]+$/i, /\/cinematheque(\/|$)/],
   }),
 )
 
