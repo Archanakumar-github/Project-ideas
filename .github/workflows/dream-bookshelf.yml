@@ -1,0 +1,61 @@
+name: Dream Bookshelf
+
+# Pull requests: type-check, test and build.
+# Pushes to main: the same, then publish to GitHub Pages
+# (one-time setup: repo Settings -> Pages -> Source: "GitHub Actions").
+on:
+  pull_request:
+    paths:
+      - 'dream-bookshelf/**'
+      - '.github/workflows/dream-bookshelf.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'dream-bookshelf/**'
+      - '.github/workflows/dream-bookshelf.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dream-bookshelf-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dream-bookshelf
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dream-bookshelf/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - name: Build (served from /<repo-name>/ on GitHub Pages)
+        run: npm run build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dream-bookshelf/dist
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
