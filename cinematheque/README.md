@@ -2,7 +2,7 @@
 
 A private, text-only film and series log, built for iPhone. No posters, no accounts, no server. Your library lives on your device.
 
-*Cinematic Midnight Minimal*: obsidian `#0D0E12`, off-white titles in Inter, archival metadata in JetBrains Mono, and Analog Theatre Red `#E53E3E` only for active states.
+*Repertory* theme: a warm projection-room black, silver-screen cream type, film titles set in Fraunces like title cards, archival metadata in JetBrains Mono, a sprocket-hole film strip under the header, and marquee amber `#E8A93A` for whatever is active. Curtain red is kept for deleting.
 
 ## Install it on your iPhone
 
@@ -81,4 +81,4 @@ npm test            # data-layer unit tests (no install needed)
 npm i && npm run test:e2e   # drives the app in an iPhone-sized Chromium
 ```
 
-Fonts: Inter and JetBrains Mono, both SIL Open Font License (see `fonts/`).
+Fonts: Fraunces, Inter and JetBrains Mono, all SIL Open Font License (see `fonts/`).

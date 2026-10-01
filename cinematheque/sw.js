@@ -15,6 +15,8 @@ const ASSETS = [
   './js/lookup.js',
   './fonts/inter-latin-wght-normal.woff2',
   './fonts/jetbrains-mono-latin-wght-normal.woff2',
+  './fonts/fraunces-latin-opsz-normal.woff2',
+  './fonts/fraunces-latin-opsz-italic.woff2',
   './icons/apple-touch-icon.png',
   './icons/favicon-32.png',
   './icons/icon-192.png',
