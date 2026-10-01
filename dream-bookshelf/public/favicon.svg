@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#2B241D"/>
+      <stop offset="0.6" stop-color="#1A1714"/>
+      <stop offset="1" stop-color="#12100E"/>
+    </radialGradient>
+    <radialGradient id="lamp" cx="50%" cy="38%" r="42%">
+      <stop offset="0" stop-color="#E29578" stop-opacity="0.38"/>
+      <stop offset="1" stop-color="#E29578" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="plank" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5A4A3A"/>
+      <stop offset="1" stop-color="#38322B"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="256" cy="236" r="200" fill="url(#lamp)"/>
+  <!-- crescent moon -->
+  <path d="M356 104a40 40 0 1 0 34 62a32 32 0 1 1 -34 -62z" fill="#F2EBE1" opacity="0.9"/>
+  <circle cx="318" cy="96" r="4" fill="#D4A373"/>
+  <circle cx="402" cy="196" r="3" fill="#D4A373" opacity="0.8"/>
+  <!-- books -->
+  <rect x="122" y="196" width="50" height="170" rx="6" fill="#81B29A"/>
+  <rect x="122" y="222" width="50" height="8" fill="#12100E" opacity="0.25"/>
+  <rect x="122" y="334" width="50" height="8" fill="#12100E" opacity="0.25"/>
+  <rect x="180" y="166" width="58" height="200" rx="6" fill="#E07A5F"/>
+  <rect x="180" y="196" width="58" height="10" fill="#12100E" opacity="0.22"/>
+  <rect x="196" y="250" width="26" height="40" rx="3" fill="#F2EBE1" opacity="0.35"/>
+  <rect x="246" y="186" width="46" height="180" rx="6" fill="#D4A373"/>
+  <rect x="246" y="210" width="46" height="6" fill="#12100E" opacity="0.25"/>
+  <rect x="246" y="340" width="46" height="6" fill="#12100E" opacity="0.25"/>
+  <g transform="rotate(14 330 366)">
+    <rect x="302" y="190" width="48" height="176" rx="6" fill="#F2EBE1"/>
+    <rect x="302" y="216" width="48" height="8" fill="#A69B8F" opacity="0.6"/>
+    <rect x="302" y="334" width="48" height="8" fill="#A69B8F" opacity="0.6"/>
+  </g>
+  <!-- shelf -->
+  <rect x="88" y="364" width="336" height="22" rx="6" fill="url(#plank)"/>
+  <rect x="88" y="364" width="336" height="4" rx="2" fill="#D4A373" opacity="0.35"/>
+</svg>
