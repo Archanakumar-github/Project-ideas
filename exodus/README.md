@@ -8,8 +8,8 @@ A private, text-only film and series log, built for iPhone. No posters, no accou
 
 exodus. is a web app you install once. After that it runs from your Home Screen like any other app, fully offline, and every title, list and change you make is saved on the phone the moment you make it.
 
-1. **Put it online once.** Merge to `master`, then in GitHub go to **Settings → Pages → Build and deployment → Source: Deploy from a branch → `master` / `(root)` → Save**. After a minute it's live at `https://archanakumar-github.github.io/Project-ideas/exodus/`.
-   Any static HTTPS host works too (Netlify Drop, Cloudflare Pages: drag in the `exodus/` folder). Only the app's code is hosted. Your library never leaves the phone.
+1. **Put it online once.** Merge the pull request into `master`. The repo's GitHub Pages workflow publishes exodus. next to Bibliotheca. A minute later it's live at **`https://archanakumar-github.github.io/Project-ideas/exodus/index.html`**.
+   (Pages must be set to **Settings → Pages → Source: GitHub Actions**; it already is for Bibliotheca.) Only the app's code is hosted. Your library never leaves the phone.
 2. **Open that link in Safari** on the iPhone and tap **Share → Add to Home Screen**. The app shows a reminder until you do.
 3. **Open exodus. from the Home Screen.** It's now an installed app:
    - **Offline.** The whole app is stored on the phone; no connection is needed after the first visit.
