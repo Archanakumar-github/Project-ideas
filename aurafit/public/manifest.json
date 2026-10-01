@@ -1,0 +1,43 @@
+{
+  "id": "./",
+  "name": "AuraFit",
+  "short_name": "AuraFit",
+  "description": "A private, offline-first fitness and diet coach. Your plan, built from your own user_profile.md.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#0B0D12",
+  "theme_color": "#0B0D12",
+  "categories": ["health", "fitness", "lifestyle"],
+  "icons": [
+    { "src": "pwa-64x64.png", "sizes": "64x64", "type": "image/png" },
+    { "src": "pwa-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "pwa-512x512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "maskable-icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "logo.svg", "sizes": "any", "type": "image/svg+xml" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Log water",
+      "short_name": "Water",
+      "url": "./?tab=diet&action=water",
+      "icons": [{ "src": "pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Start today's workout",
+      "short_name": "Workout",
+      "url": "./?tab=train&action=start",
+      "icons": [{ "src": "pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Write in journal",
+      "short_name": "Journal",
+      "url": "./?tab=journal&action=new",
+      "icons": [{ "src": "pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}
