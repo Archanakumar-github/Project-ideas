@@ -513,7 +513,7 @@ function emptyState(ctx) {
 
 let openRow = null;
 let swipe = null;
-let lastSwipe = 0;
+let lastSwipe = -Infinity;
 let swallowUntil = 0;
 
 function rowCtx(row) {

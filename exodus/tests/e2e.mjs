@@ -104,6 +104,7 @@ async function swipeLeft(row) {
 try {
   await page.goto(base);
   await page.waitForSelector('.empty');
+  await page.evaluate(() => document.fonts.ready);
   assert.match(await page.locator('.brand').first().textContent(), /exodus\./);
   await shot('welcome');
 
