@@ -241,6 +241,36 @@ try {
   await page.locator('#toast button', { hasText: 'UNDO' }).click();
   assert.ok((await rows().count()) > 20, 'undo restores the replaced library');
 
+  // --- Offline: once loaded, the app and everything entered survive with no network at all
+  const off = await browser.newContext({ ...iphone });
+  const p2 = await off.newPage();
+  const offErrors = [];
+  p2.on('pageerror', (e) => offErrors.push(e.message));
+  await p2.goto(base);
+  await p2.evaluate(() => navigator.serviceWorker.ready);
+  await p2.reload();
+  await p2.waitForFunction(() => !!navigator.serviceWorker.controller);
+  assert.equal(await p2.locator('.install').count(), 1, 'Safari install hint shown');
+  await p2.locator('#fab').click();
+  await p2.locator('#sheet input[aria-label="Title"]').fill('Paris, Texas (1984)');
+  await p2.locator('#sheet').getByRole('button', { name: 'ADD', exact: true }).click();
+  await p2.waitForTimeout(400);
+  await off.setOffline(true);
+  server.closeAllConnections();
+  await p2.reload();
+  await p2.waitForSelector('#list .row');
+  assert.deepEqual(await p2.locator('#list .row .tt').allTextContents(), ['Paris, Texas']);
+  await p2.locator('#fab').click();
+  await p2.locator('#sheet input[aria-label="Title"]').fill('Wings of Desire (1987)');
+  await p2.locator('#sheet').getByRole('button', { name: 'ADD', exact: true }).click();
+  await p2.waitForTimeout(400);
+  await p2.reload();
+  await p2.waitForSelector('#list .row');
+  assert.deepEqual((await p2.locator('#list .row .tt').allTextContents()).sort(), ['Paris, Texas', 'Wings of Desire'], 'changes made offline are kept');
+  if (SHOTS) await p2.screenshot({ path: path.join(SHOTS, 'offline.png') });
+  assert.deepEqual(offErrors, [], 'no page errors offline');
+  await off.close();
+
   assert.deepEqual(problems, [], 'no console errors or CSP violations');
   console.log('e2e: all checks passed');
 } catch (err) {

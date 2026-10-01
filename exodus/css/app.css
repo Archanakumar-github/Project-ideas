@@ -1066,3 +1066,23 @@ textarea.in::placeholder { font-size: 12.5px; line-height: 1.75; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 .chip .star { color: var(--red); }
+
+/* ---------- install hint (Safari, not yet on the Home Screen) ---------- */
+.install {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 820px;
+  margin: 10px auto 0;
+  padding: 12px 6px 12px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  font: 400 11px/1.6 var(--mono);
+  letter-spacing: 0.02em;
+  color: var(--mute);
+  width: calc(100% - 32px);
+}
+.install b { font-weight: 500; color: var(--fg); margin-right: 4px; }
+.install .i-g { display: inline-block; width: 14px; height: 15px; margin: 0 2px; border: 1px solid var(--red); border-top: 0; border-radius: 0 0 3px 3px; color: var(--red); font-size: 10px; line-height: 6px; text-align: center; vertical-align: -2px; }
+.install .i-t { flex: 1; min-width: 0; }
+.install button { flex: none; width: 32px; height: 28px; font: 300 18px/1 var(--sans); color: var(--mute); }

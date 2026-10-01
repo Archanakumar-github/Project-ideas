@@ -75,6 +75,8 @@ function savePrefs() {
 }
 
 let saveChain = Promise.resolve();
+let lastSaved = 0;
+let storagePersisted = null;
 let saveQueued = false;
 function persist() {
   saveQueued = true;
@@ -83,6 +85,7 @@ function persist() {
     saveQueued = false;
     try {
       await vault.save(db);
+      lastSaved = Date.now();
     } catch {
       toast('Could not save — storage may be full. Export a backup from the menu.');
     }
@@ -1745,9 +1748,16 @@ function menuSheet() {
       label('PRIVACY'),
       ...privacyRows(),
 
+      label('STORAGE'),
+      h('div', { class: 'act' }, h('span', { class: 'k' }, '●'), h('span', { class: 't' }, 'Saved on this device',
+        h('span', { class: 'sub' }, `Every change saves instantly${lastSaved ? ` · last save ${new Date(lastSaved).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}` : ''}${vault.enabled ? ' · encrypted' : ''}`))),
+      h('div', { class: 'act' }, h('span', { class: 'k' }, STANDALONE ? '●' : '◦'), h('span', { class: 't' }, STANDALONE ? 'Installed · works offline' : 'Not installed yet',
+        h('span', { class: 'sub' }, STANDALONE
+          ? (storagePersisted === false ? 'Storage may be cleared if the phone runs very low on space — keep a backup' : 'Your library stays put between launches')
+          : 'In Safari: Share → Add to Home Screen. Until then Safari may clear data after weeks without a visit.'))),
+
       label('ABOUT'),
-      h('p', { class: 'note' }, 'Everything stays on this device — no account, no server, no tracking. ',
-        h('b', null, 'Tip: '), 'in Safari tap Share → Add to Home Screen. It opens full-screen, works offline, and keeps Safari from clearing your library after weeks without a visit. Export a backup now and then.'),
+      h('p', { class: 'note' }, 'Everything stays on this device — no account, no server, no tracking. Export a backup now and then: it is the only copy that survives losing or resetting the phone.'),
       label('DANGER'),
       confirmAct('×', 'Erase this library', 'Tap again — erases every title and list', () => {
         vault.wipe();
@@ -1997,6 +2007,7 @@ E.lockForm.addEventListener('submit', async (e) => {
     E.lock.hidden = true;
     E.html.classList.remove('is-locked');
     render();
+    backupNudge();
   } catch {
     const n = fails.n + 1;
     const until = n >= 5 ? Date.now() + Math.min(300, 2 ** (n - 4)) * 1000 : 0;
@@ -2143,24 +2154,47 @@ if (window.visualViewport) {
 
 function registerSW() {
   if (!('serviceWorker' in navigator) || !window.isSecureContext) return;
-  navigator.serviceWorker.register('sw.js').then((reg) => {
-    const offer = (w) => {
-      if (!w || !navigator.serviceWorker.controller) return;
-      toast('A new version of exodus. is ready', { label: 'RELOAD', run: () => w.postMessage('skip') });
-    };
-    if (reg.waiting) offer(reg.waiting);
-    reg.addEventListener('updatefound', () => {
-      const w = reg.installing;
-      if (w) w.addEventListener('statechange', () => { if (w.state === 'installed') offer(w); });
-    });
-  }).catch(() => {});
-  const hadController = !!navigator.serviceWorker.controller;
-  let reloaded = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (reloaded || !hadController) return;
-    reloaded = true;
-    location.reload();
-  });
+  navigator.serviceWorker.register('sw.js').then((reg) => reg.update()).catch(() => {});
+}
+
+const STANDALONE = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+/** Safari only: explain Add to Home Screen, which is what makes the app offline and its storage lasting. */
+function installBanner() {
+  if (STANDALONE || !IS_IOS || prefs.hideInstall) return;
+  const bar = h('div', { class: 'install', role: 'note' },
+    h('span', { class: 'i-t' }, h('b', null, 'Install exodus.'), ' Tap Share ', h('span', { class: 'i-g', 'aria-label': 'the Share button' }, '↑'), ' then “Add to Home Screen”. It then works offline and your library is kept safe.'),
+    h('button', {
+      type: 'button',
+      'aria-label': 'Dismiss',
+      onclick: () => {
+        prefs.hideInstall = true;
+        savePrefs();
+        bar.remove();
+      },
+    }, '×'),
+  );
+  E.top.after(bar);
+}
+
+/** Once a week at most: nudge toward a backup when there is something worth backing up. */
+function backupNudge() {
+  if (!db) return;
+  const n = Object.keys(db.items).length;
+  const week = 7 * 864e5;
+  const stale = !prefs.lastBackup || Date.now() - prefs.lastBackup > 30 * 864e5;
+  if (n < 10 || !stale || (prefs.lastNudge && Date.now() - prefs.lastNudge < week)) return;
+  const tryShow = (tries) => {
+    if (!db) return;
+    if (E.toast.classList.contains('show') || sheet.cur) {
+      if (tries > 0) setTimeout(() => tryShow(tries - 1), 8000);
+      return;
+    }
+    prefs.lastNudge = Date.now();
+    savePrefs();
+    toast(prefs.lastBackup ? 'It’s been a month since your last backup' : `${n} titles logged — keep a backup copy`, { label: 'EXPORT', run: exportBackup });
+  };
+  setTimeout(() => tryShow(5), 1500);
 }
 
 function boot() {
@@ -2187,8 +2221,12 @@ function boot() {
     }
     render();
   }
-  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().then((ok) => { storagePersisted = ok; }).catch(() => {});
+  }
   registerSW();
+  installBanner();
+  backupNudge();
 }
 
 boot();
