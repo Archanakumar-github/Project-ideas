@@ -43,7 +43,7 @@ from Safari's 7-day storage clean-up for websites.
 | Host | Notes |
 |---|---|
 | Netlify / Vercel / Cloudflare Pages | Build command `npm run build`, output `dist`, root `dream-bookshelf`. |
-| GitHub Pages (project site) | Build with `BASE_PATH=/<repo-name>/ npm run build` so asset and service-worker URLs include the sub-path. |
+| GitHub Pages (project site) | Already set up: [`.github/workflows/dream-bookshelf.yml`](../.github/workflows/dream-bookshelf.yml) tests, builds and publishes on every push to `main`. One-time step: **Settings → Pages → Source: GitHub Actions**. The app is then at `https://<user>.github.io/<repo-name>/`. To build by hand for a sub-path, run `BASE_PATH=/<repo-name>/ npm run build`. |
 
 ## Tech stack
 
