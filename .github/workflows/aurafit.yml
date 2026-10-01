@@ -1,0 +1,45 @@
+name: AuraFit
+
+# Type-check, test and build AuraFit on every pull request and push to the default branch that touches it.
+# (GitHub Pages for this repository is published by the Bibliotheca workflow; deploy
+# aurafit/dist to any static host, see aurafit/README.md.)
+on:
+  pull_request:
+    paths:
+      - 'aurafit/**'
+      - '.github/workflows/aurafit.yml'
+  push:
+    branches: [master, main]
+    paths:
+      - 'aurafit/**'
+      - '.github/workflows/aurafit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aurafit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: aurafit
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: aurafit/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: aurafit-dist
+          path: aurafit/dist
