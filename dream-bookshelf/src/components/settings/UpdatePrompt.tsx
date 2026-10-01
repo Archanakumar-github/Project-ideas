@@ -24,7 +24,7 @@ export function UpdatePrompt() {
   useEffect(() => {
     if (!needRefresh) return
     ui.toast({
-      message: 'A fresh edition of Dream Bookshelf is ready.',
+      message: 'A fresh edition of Bibliotheca is ready.',
       duration: Infinity,
       action: { label: 'Reload', run: () => void updateServiceWorker(true) },
     })

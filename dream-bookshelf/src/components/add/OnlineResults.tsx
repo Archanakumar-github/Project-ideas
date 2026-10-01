@@ -80,7 +80,7 @@ export function OnlineResults({ query, scope, target, onSaved }: OnlineResultsPr
     return (
       <div className="animate-fade-in rounded-card border border-line bg-card p-4 text-[14px] text-ink-muted">
         <p className="font-medium text-ink">{state.message}</p>
-        <p className="mt-1">You can still save it now; Dream Bookshelf will retry the lookup in the background.</p>
+        <p className="mt-1">You can still save it now; Bibliotheca will retry the lookup in the background.</p>
         <div className="mt-4 grid gap-2">
           <Button variant="primary" block onClick={() => void placeholder()}>
             Save “{query.trim()}” and look it up later

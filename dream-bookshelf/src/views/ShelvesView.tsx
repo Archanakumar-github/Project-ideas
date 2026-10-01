@@ -91,7 +91,7 @@ export function ShelvesView({ active }: { active: boolean }) {
         />
       ) : (
         <ViewHeader
-          title="Dream Bookshelf"
+          title="Bibliotheca"
           subtitle={lib.ready ? subtitle : ' '}
           actions={
             <>

@@ -1,4 +1,4 @@
-# Dream Bookshelf
+# Bibliotheca
 
 A private, offline-first Progressive Web App for keeping track of the books and series you
 **want to read** and **want to buy**. It's tuned for Safari and Chrome on iOS, installs to the
@@ -43,7 +43,7 @@ from Safari's 7-day storage clean-up for websites.
 | Host | Notes |
 |---|---|
 | Netlify / Vercel / Cloudflare Pages | Build command `npm run build`, output `dist`, root `dream-bookshelf`. |
-| GitHub Pages (project site) | Already set up: [`.github/workflows/dream-bookshelf.yml`](../.github/workflows/dream-bookshelf.yml) tests, builds and publishes on every push to `main`. One-time step: **Settings → Pages → Source: GitHub Actions**. The app is then at `https://<user>.github.io/<repo-name>/`. To build by hand for a sub-path, run `BASE_PATH=/<repo-name>/ npm run build`. |
+| GitHub Pages (project site) | Already set up: [`.github/workflows/dream-bookshelf.yml`](../.github/workflows/dream-bookshelf.yml) tests, builds and publishes on every push to `master`. One-time step: **Settings → Pages → Source: GitHub Actions**. The app is then at `https://<user>.github.io/<repo-name>/`. To build by hand for a sub-path, run `BASE_PATH=/<repo-name>/ npm run build`. |
 
 ## Tech stack
 
@@ -150,7 +150,7 @@ the fallback reliable. The key is stored on the device and left out of backups.
 
 ### Backup format
 
-`Settings → Backup & restore → Export` makes `dream-bookshelf-YYYY-MM-DD.json`. On iOS it opens
+`Settings → Backup & restore → Export` makes `bibliotheca-YYYY-MM-DD.json`. On iOS it opens
 the share sheet (Save to Files, AirDrop…):
 
 ```jsonc
