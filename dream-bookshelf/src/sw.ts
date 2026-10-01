@@ -10,25 +10,44 @@
  *
  * Data itself never goes through here: it lives in IndexedDB, written by the page.
  */
-import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching'
+import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching'
 import { NavigationRoute, registerRoute } from 'workbox-routing'
 import { CacheFirst, NetworkFirst } from 'workbox-strategies'
 import { ExpirationPlugin } from 'workbox-expiration'
 import { CacheableResponsePlugin } from 'workbox-cacheable-response'
-import { clientsClaim } from 'workbox-core'
+import { cacheNames, clientsClaim } from 'workbox-core'
 
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: Array<{ url: string; revision: string | null }> }
 
 const DAY = 24 * 60 * 60
 
 precacheAndRoute(self.__WB_MANIFEST)
-cleanupOutdatedCaches()
 
-// App-shell routing: every navigation resolves to the precached index.html —
-// except the separate cinémathèque. app published alongside at /<repo>/cinematheque/.
+// The other apps published on this site live in sub-folders of this worker's scope.
+const SIBLING_APPS = /\/(cinematheque|aurafit|ethereal)(\/|$)/
+
+// Remove precaches left by older versions of this worker. (Workbox's cleanupOutdatedCaches()
+// deletes every precache whose name *contains* this scope, which would include the sibling
+// apps' precaches, since their scopes start with ours. Match our exact scope instead.)
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((names) =>
+        Promise.all(
+          names
+            .filter((n) => n.includes('-precache-') && n.endsWith(self.registration.scope) && n !== cacheNames.precache)
+            .map((n) => caches.delete(n)),
+        ),
+      ),
+  )
+})
+
+// App-shell routing: every navigation resolves to the precached index.html — except the
+// separate apps published alongside at /<repo>/cinematheque/, /<repo>/aurafit/ and /<repo>/ethereal/.
 registerRoute(
   new NavigationRoute(createHandlerBoundToURL('index.html'), {
-    denylist: [/^\/api\//, /\.[a-z0-9]+$/i, /\/cinematheque(\/|$)/],
+    denylist: [/^\/api\//, /\.[a-z0-9]+$/i, SIBLING_APPS],
   }),
 )
 
